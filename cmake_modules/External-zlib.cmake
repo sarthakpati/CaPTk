@@ -13,7 +13,7 @@ ExternalProject_Add(
     SOURCE_DIR ${CMAKE_BINARY_DIR}/zlib-src
     URL https://zlib.net/zlib-1.2.11.tar.gz 
     # BUILD_COMMAND make
-    INSTALL_COMMAND cmake -E echo "Skipping install step."
+    INSTALL_COMMAND install/strip
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/zlib-build --static
 )
 
