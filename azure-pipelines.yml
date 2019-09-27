@@ -295,7 +295,7 @@ jobs:
     # Configure and build superbuild
     - bash: |
         cd bin
-        cmake -DBUILD_CLAIRE=ON -DCMAKE_INSTALL_PREFIX="./install/appdir/usr" ..
+        sudo cmake -DBUILD_CLAIRE=ON -DCMAKE_INSTALL_PREFIX="./install/appdir/usr" ..
         make -j2
       displayName: 'Configure and compile Superbuild'
       condition: ne(variables.CACHE_RESTORED_LINUX, 'true')
@@ -475,7 +475,7 @@ jobs:
         export CMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
         export CMAKE_PREFIX_PATH="/Library/TeX/texbin"
 
-        cmake -DBUILD_CLAIRE=ON ../ -DCMAKE_INSTALL_PREFIX="./install"
+        sudo cmake -DBUILD_CLAIRE=ON ../ -DCMAKE_INSTALL_PREFIX="./install"
 
         make -j 2
 
