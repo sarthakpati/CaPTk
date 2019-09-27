@@ -14,7 +14,7 @@ ExternalProject_Add(
     BINARY_DIR ${CMAKE_BINARY_DIR}/nifti-build
     URL https://sourceforge.net/projects/niftilib/files/nifticlib/nifticlib_2_0_0/nifticlib-2.0.0.tar.gz 
     # BUILD_COMMAND make
-    INSTALL_COMMAND install/strip
+    INSTALL_COMMAND make install/strip
     CMAKE_ARGS 
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/nifti-build 
         -DCMAKE_CXX_COMPILER=mpicxx
