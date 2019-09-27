@@ -7,6 +7,21 @@ SET(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 #MESSAGE( STATUS "Adding fftw-${PETSC_VERSION} ...")
 
+find_package(MPI REQUIRED)
+
+include_directories(${MPI_INCLUDE_PATH})
+
+add_executable(hello hello.cpp)
+target_link_libraries(hello ${MPI_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+  SET(COMPILE_FLAGS "${COMPILE_FLAGS} ${MPI_COMPILE_FLAGS}" )
+endif()
+
+if(MPI_LINK_FLAGS)
+  SET(LINK_FLAGS "${LINK_FLAGS} ${MPI_LINK_FLAGS}" )
+endif()
+
 set(FFTW_OPTIONS --enable-sse2 MAKEINFO=missing )
 if (ENABLE_OMP)
     set(FFTW_OPTIONS ${FFTW_OPTIONS} --enable-threads --enable-openmp)

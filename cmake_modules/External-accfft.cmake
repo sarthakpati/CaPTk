@@ -6,6 +6,21 @@ SET( ACCFFT_DEPENDENCIES )
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED YES) 
 
+find_package(MPI REQUIRED)
+
+include_directories(${MPI_INCLUDE_PATH})
+
+add_executable(hello hello.cpp)
+target_link_libraries(hello ${MPI_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+  SET(COMPILE_FLAGS "${COMPILE_FLAGS} ${MPI_COMPILE_FLAGS}" )
+endif()
+
+if(MPI_LINK_FLAGS)
+  SET(LINK_FLAGS "${LINK_FLAGS} ${MPI_LINK_FLAGS}" )
+endif()
+
 #MESSAGE( STATUS "Adding accfft-${PETSC_VERSION} ...")
 ExternalProject_Add(
     accfft
