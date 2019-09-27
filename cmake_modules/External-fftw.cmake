@@ -11,9 +11,6 @@ find_package(MPI REQUIRED)
 
 include_directories(${MPI_INCLUDE_PATH})
 
-add_executable(hello hello.cpp)
-target_link_libraries(hello ${MPI_LIBRARIES})
-
 if(MPI_COMPILE_FLAGS)
   SET(COMPILE_FLAGS "${COMPILE_FLAGS} ${MPI_COMPILE_FLAGS}" )
 endif()
