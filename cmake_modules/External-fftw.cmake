@@ -21,7 +21,7 @@ ExternalProject_Add(
     SOURCE_DIR ${CMAKE_BINARY_DIR}/fftw-src
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/fftw-build ${FFTW_OPTIONS} CFLAGS=-O3
     BUILD_COMMAND make 
-    INSTALL_COMMAND make install/strip
+    INSTALL_COMMAND make install
 )
 ExternalProject_Add(
     fftw-sgl
@@ -30,7 +30,7 @@ ExternalProject_Add(
     SOURCE_DIR ${CMAKE_BINARY_DIR}/fftw-src
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/fftw-build ${FFTW_OPTIONS} CFLAGS=-O3 --enable-float
     BUILD_COMMAND make 
-    INSTALL_COMMAND make install/strip
+    INSTALL_COMMAND make install
 )
 
 SET( FFTW_DIR ${CMAKE_BINARY_DIR}/fftw-build)

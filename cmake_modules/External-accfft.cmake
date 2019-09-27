@@ -14,7 +14,7 @@ ExternalProject_Add(
     GIT_REPOSITORY https://github.com/amirgholami/accfft.git
     GIT_TAG origin/master
     # BUILD_COMMAND make
-    INSTALL_COMMAND make install/strip
+    INSTALL_COMMAND make install
     CMAKE_ARGS 
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/accfft-build 
         -DFFTW_ROOT=${FFTW_DIR} 
