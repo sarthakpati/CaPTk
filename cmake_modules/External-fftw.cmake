@@ -7,13 +7,8 @@ SET(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 #MESSAGE( STATUS "Adding fftw-${PETSC_VERSION} ...")
 
-set(FFTW_OPTIONS --enable-sse2 MAKEINFO=missing )
-if (ENABLE_OMP)
-    set(FFTW_OPTIONS ${FFTW_OPTIONS} --enable-threads --enable-openmp)
-endif()
-if(ENABLE_AVX)
-    set(FFTW_OPTIONS ${FFTW_OPTIONS} --enable-avx)
-endif()
+set(FFTW_OPTIONS --enable-sse2 MAKEINFO=missing --enable-threads --enable-openmp)
+    
 ExternalProject_Add(
     fftw-dbl
     BUILD_IN_SOURCE 1
