@@ -258,8 +258,19 @@ namespace cbica
       }
       if (spacing_1[i] != spacing_2[i])
       {
-        std::cerr << "Spacing mismatch at dimension '" << i << "'\n";
-        return false;
+        auto percentageDifference = std::abs(spacing_1[i] - spacing_2[i]) * 100;
+        percentageDifference /= spacing_1[i];
+        if (percentageDifference > 0.000001)
+        {
+          std::cerr << "Spacing mismatch at dimension '" << i << "'\n";
+          return false;
+        }
+        else
+        {
+          std::cout << "Ignoring spacing difference of '" <<
+            percentageDifference << "%' in dimension '" <<
+            i << "'\n";
+        }
       }
     }
 
@@ -311,8 +322,19 @@ namespace cbica
       }
       if (imageSpacing1[d] != imageSpacing2[d])
       {
-        std::cout << "The spacing in dimension[" << d << "] of the image_1 (" << image1 << ") and image_2 (" << image2 << ") doesn't match.\n";
-        return false;
+        auto percentageDifference = std::abs(imageSpacing1[d] - imageSpacing2[d]) * 100;
+        percentageDifference /= imageSpacing1[d];
+        if (percentageDifference > 0.000001)
+        {
+          std::cerr << "Spacing mismatch at dimension '" << d << "'\n";
+          return false;
+        }
+        else
+        {
+          std::cout << "Ignoring spacing difference of '" <<
+            percentageDifference << "%' in dimension '" <<
+            d << "'\n";
+        }
       }
       if (imageOrigin1[d] != imageOrigin2[d])
       {
@@ -330,23 +352,27 @@ namespace cbica
   Uses the itk::JoinSeriesImageFilter to accomplish this
   
   \param inputImage The vector of images from which the larger image is to be extracted
+  \param newSpacing The spacing in the new dimension
   */
   template< class TInputImageType, class TOutputImageType >
-  typename TOutputImageType::Pointer GetJoinedImage(std::vector< typename TInputImageType::Pointer > &inputImages)
+  typename TOutputImageType::Pointer GetJoinedImage(std::vector< typename TInputImageType::Pointer > &inputImages, double newSpacing = 1.0)
   {
-   if (TOutputImageType::ImageDimension + 1 != TInputImageType::ImageDimension)
+   if (TOutputImageType::ImageDimension - 1 != TInputImageType::ImageDimension)
    {
      std::cerr << "Only works when input and output image dimensions are N and (N+1), respectively.\n";
-     return typename TOutputImageType::New();
+     //return typename TOutputImageType::New();
+     exit(EXIT_FAILURE);
    }
-   auto joinFilter = typename itk::JoinSeriesImageFilter< TInputImageType, TOutputImageType >::New();
+   auto joinFilter = /*typename*/ itk::JoinSeriesImageFilter< TInputImageType, TOutputImageType >::New();
+   joinFilter->SetSpacing(newSpacing);
    
    for (size_t N = 0; N < inputImages.size(); N++)
    {
      if (!ImageSanityCheck< TInputImageType >(inputImages[0], inputImages[N]))
      {
        std::cerr << "Image Sanity check failed in index '" << N << "'\n";
-       return typename TOutputImageType::New();
+       //return typename TOutputImageType::New();
+       exit(EXIT_FAILURE);
      }
      joinFilter->SetInput(N, inputImages[N]);
    }
@@ -367,16 +393,16 @@ namespace cbica
   Uses the itk::ExtractImageFilter to accomplish this
 
   \param inputImage The larger image series from which the sub-images in the specified axis are extracted
-  \param axisToExtract The axis along with the images are to be extracted from; defaults to TInputImageType::ImageDimension
+  \param axisToExtract The axis along with the images are to be extracted from; defaults to TInputImageType::ImageDimension - for extraction along Z, use '3'
   \param directionsCollapseIdentity Whether direction cosines are to be normalized to identity or not; defaults to not
   */
   template< class TInputImageType, class TOutputImageType >
   std::vector< typename TOutputImageType::Pointer > GetExtractedImages(typename TInputImageType::Pointer inputImage, 
-   int axisToExtract = TInputImageType::ImageDimension, bool directionsCollapseIdentity = false)
+   int axisToExtract = TInputImageType::ImageDimension - 1, bool directionsCollapseIdentity = false)
   {
    std::vector<typename TOutputImageType::Pointer> returnImages;
 
-   if (TOutputImageType::ImageDimension != TInputImageType::ImageDimension + 1)
+   if (TOutputImageType::ImageDimension != TInputImageType::ImageDimension - 1)
    {
      std::cerr << "Only works when input and output image dimensions are N and (N-1), respectively.\n";
      return returnImages;
@@ -384,6 +410,8 @@ namespace cbica
    // set the sub-image properties
    auto imageSize = inputImage->GetLargestPossibleRegion().GetSize();
    auto regionSize = imageSize;
+   regionSize[axisToExtract] = 0;
+   returnImages.resize(imageSize[axisToExtract]);
 
    typename TInputImageType::IndexType regionIndex;
    regionIndex.Fill(0);
@@ -393,7 +421,7 @@ namespace cbica
    {
      regionIndex[axisToExtract] = i;
      typename TInputImageType::RegionType desiredRegion(regionIndex, regionSize);
-     auto extractor = typename itk::ExtractImageFilter< TInputImageType, TOutputImageType >::New();
+     auto extractor = /*typename*/ itk::ExtractImageFilter< TInputImageType, TOutputImageType >::New();
      extractor->SetExtractionRegion(desiredRegion);
      extractor->SetInput(inputImage);
      if (directionsCollapseIdentity)
@@ -413,8 +441,8 @@ namespace cbica
        std::cerr << "Extracting failed: " << e.what() << "\n";
      }
      auto temp = extractor->GetOutput();
-     temp->DisconnectPipeline(); // ensure a hard copy is done 
-     returnImages.push_back(temp);
+     //temp->DisconnectPipeline(); // ensure a hard copy is done 
+     returnImages[i] = temp;
    }
    return returnImages;
   }
