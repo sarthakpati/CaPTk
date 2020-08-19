@@ -382,6 +382,12 @@ For our Deep Learning based segmentation, we use DeepMedic [1,2] and users can d
 ${CaPTk_InstallDir}/bin/DeepMedic.exe -md ${CaPTk_InstallDir}/data/deepMedic/saved_models/brainTumorSegmentation -i C:/data/t1.nii.gz,C:/data/t1ce.nii.gz,C:/data/t2.nii.gz,C:/data/fl.nii.gz -m C:/data/optionalMask.nii.gz -o C:/data/outputSegmentation.nii.gz
 ${CaPTk_InstallDir}/bin/DeepMedic.exe -i c:/t1_withSkull.nii.gz -o c:/output -md c:/CaPTk_install/data/deepMedic/saved_models/skullStripping_modalityAgnostic # modality-agnostic skull-stripping
 \endverbatim
+
+The legacy version of DeepMedic's inference engine is also available via the CLI:
+\verbatim
+${CaPTk_InstallDir}/bin/DeepMedic_legacy.exe -t1 C:/data/t1_withSkull.nii.gz -t2 C:/data/t2_withSkull.nii.gz -t1c C:/data/t1ce_withSkull.nii.gz -fl C:/data/fl_withSkull.nii.gz -o C:/data/output/ -m C:/data/optionalMask.nii.gz -md ${CaPTk_InstallDir}/data/deepMedic/saved_models/skullStripping
+${CaPTk_InstallDir}/bin/DeepMedic_legacy.exe -t1 C:/data/t1.nii.gz -t2 C:/data/t2.nii.gz -t1c C:/data/t1ce.nii.gz -fl C:/data/fl.nii.gz -o C:/data/output/ -m C:/data/optionalMask.nii.gz -md ${CaPTk_InstallDir}/data/deepMedic/saved_models/brainTumorSegmentation
+\endverbatim
 <br>
 
 --------
