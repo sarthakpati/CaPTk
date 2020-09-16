@@ -499,6 +499,7 @@ VariableSizeMatrixType SurvivalPredictor::MatrixTranspose(const VariableSizeMatr
 
 VectorDouble SurvivalPredictor::SurvivalPredictionOnExistingModel(const std::string &modeldirectory, const std::string &inputdirectory, const std::vector < std::map < CAPTK::ImageModalityType, std::string>> &qualifiedsubjects, const std::string &outputdirectory)
 {
+  std::cout << "===[DEBUG] Entering SurvivalPredictor::SurvivalPredictionOnExistingModel.\n";
 	typedef itk::CSVArray2DFileReader<double> ReaderType;
 	VariableSizeMatrixType HistogramFeaturesConfigurations;
 	HistogramFeaturesConfigurations.SetSize(33, 3); //11 modalities*3 regions = 33 configurations*3 histogram features for each configuration
@@ -507,6 +508,7 @@ VectorDouble SurvivalPredictor::SurvivalPredictionOnExistingModel(const std::str
 	CSVFileReaderType::Pointer reader = CSVFileReaderType::New();
 	VectorDouble ages;
 	MatrixType dataMatrix;
+  std::cout << "===[DEBUG] Reading Survival_HMFeatures_Configuration from: '" << getCaPTkDataDir() + "/survival/Survival_HMFeatures_Configuration.csv' .\n";
 	try
 	{
 		reader->SetFileName(getCaPTkDataDir() + "/survival/Survival_HMFeatures_Configuration.csv");
@@ -531,7 +533,8 @@ VectorDouble SurvivalPredictor::SurvivalPredictionOnExistingModel(const std::str
 	VariableLengthVectorType stddevition;
   VariableLengthVectorType selectedfeatures_6months;
   VariableLengthVectorType selectedfeatures_18months;
-  
+
+  std::cout << "===[DEBUG] Reading Survival_ZScore_Mean from '" << modeldirectory + "/Survival_ZScore_Mean.csv'.\n";
   try
 	{
 		reader->SetFileName(modeldirectory + "/Survival_ZScore_Mean.csv");
