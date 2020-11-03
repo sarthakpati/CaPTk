@@ -9,7 +9,7 @@
 #include "ZScoreNormalizer.h"
 #include "FeatureExtraction.h"
 
-std::string inputImageFile, outputDir, parameterFile;
+std::string inputImageFile, outputDir, parameterFile, logFile;
 
 bool debugMode;
 
@@ -82,13 +82,18 @@ inline std::string getCaPTkDataDir()
 //template< class TImageType >
 int algorithmsRunner()
 {
+  cbica::Logging logger;
+  if (!logFile.empty())
+  {
+    logger.UseNewFile(logFile);
+  }
   if (debugMode)
   {
-    std::cout << "Starting pre-processing.\n";
+    logger.Write("Starting pre-processing.");
   }
   if (!cbica::IsDicom(inputImageFile))
   {
-    std::cerr << "The input image is not a DICOM image; please provide a DICOM image to continue.\n";
+    logger.Write("The input image is not a DICOM image; please provide a DICOM image to continue.");
     return EXIT_FAILURE;
   }
   LibraPreprocess< LibraImageType > preprocessingObj;
@@ -101,11 +106,11 @@ int algorithmsRunner()
   preprocessingObj.Update();
   if (debugMode)
   {
-    std::cout << "Done.\n";
+    logger.Write("Done.");
   }
 
   auto libraPath = findRelativeApplicationPath("libra");
-  //auto libraPath = cbica::normPath("C:/Projects/CaPTk_myFork/src/applications/individualApps/libra/libra.bat");
+  //auto libraPath = cbica::normPath("C:/Projects/CaPTk/src/applications/individualApps/libra/libra.bat");
   cbica::createDir(outputDir + "/temp");
 
   std::string command = libraPath + " " + inputImageFile + " " + outputDir + "/temp/" + cbica::getFilenameBase(inputImageFile)
@@ -113,12 +118,14 @@ int algorithmsRunner()
     + " true true"
 #endif
     ;
-  std::cout << "Running LIBRA Single Image with command '" + command + "'\n";
+  {
+    logger.Write("Running LIBRA Single Image with command'" + command + "'");
+  }
   std::system(command.c_str());
   auto outputTotalMask = outputDir + "/temp/" + cbica::getFilenameBase(inputImageFile) + "/Result_Images/totalmask/totalmask.dcm";
   if (cbica::isFile(outputTotalMask))
   {
-    std::cout << "Done.\n";
+    logger.Write("Done");
 
     //auto outputTotalMaskImage = cbica::ReadImage< LibraImageType >(outputTotalMask);
     auto dicomReader = itk::ImageSeriesReader< LibraImageType >::New();
@@ -130,7 +137,7 @@ int algorithmsRunner()
     }
     catch (itk::ExceptionObject & err)
     {
-      std::cerr << "Error while loading DICOM image(s): " << err.what() << "\n";
+      logger.Write("Error while loading DICOM image(s): " + std::string(err.what()));
     }
     auto outputTotalMaskImage = dicomReader->GetOutput();
 
@@ -138,6 +145,7 @@ int algorithmsRunner()
     auto outputRelevantMaskImage_flipped = preprocessingObj.ApplyFlipToMaskImage(outputRelevantMaskImage);
 
     auto preprocessedImage = preprocessingObj.GetOutputImage();
+    logger.Write("Starting z-scoring");
     ZScoreNormalizer< LibraImageType > normalizer;
     normalizer.SetInputImage(preprocessingObj.GetOutputImage());
     normalizer.SetInputMask(outputRelevantMaskImage_flipped);
@@ -152,6 +160,7 @@ int algorithmsRunner()
     auto outputRelevantMaskFile = outputDir + "/temp/" + cbica::getFilenameBase(inputImageFile) + "_mask.nii.gz";
     cbica::WriteImage< LibraImageType >(outputRelevantMaskImage_flipped, outputRelevantMaskFile);
 
+    logger.Write("Done");
     //auto featureExtractionPath = findRelativeApplicationPath("FeatureExtraction");
 
     auto currentDataDir = getCaPTkDataDir();
@@ -165,12 +174,14 @@ int algorithmsRunner()
       exit(EXIT_FAILURE);
     }
 
-    std::cout << "Running CaPTk's FeatureExtraction.\n";
+    logger.Write("Running CaPTk's FeatureExtraction");
+    logger.Write("Parameter file: " + parameterFile);
 
     std::vector< LibraImageType::Pointer > inputImages;
     inputImages.push_back(normalizer.GetOutput());
     FeatureExtraction< LibraImageType > features;
     features.SetPatientID("Lattice");
+    features.EnableDebugMode();
     features.SetInputImages(inputImages, "MAM");
     features.SetSelectedROIsAndLabels("1", "Breast");
     features.SetMaskImage(outputRelevantMaskImage_flipped);
@@ -181,7 +192,7 @@ int algorithmsRunner()
     features.SetVerticallyConcatenatedOutput(true);
     features.Update();
 
-    std::cout << "Done.\n";
+    logger.Write("Done");
 
     return EXIT_SUCCESS;
   }
@@ -202,6 +213,7 @@ int main(int argc, char** argv)
   parser.addOptionalParameter("d", "debugMode", cbica::Parameter::BOOLEAN, "0 or 1", "Enabled debug mode", "Default: 0");
   parser.addOptionalParameter("r", "resize", cbica::Parameter::INTEGER, "0 - 100", "What resizing factor is to be applied", "Default: " + std::to_string(resizingFactor));
   parser.addOptionalParameter("p", "paramFile", cbica::Parameter::FILE, ".csv", "A csv file with all features and its parameters filled", "Default: '../data/2_params_default.csv'");
+  parser.addOptionalParameter("L", "logDir", cbica::Parameter::DIRECTORY, "Dir with Write access", "A folder to put log files in for additional debugging");
 
   parser.getParameterValue("i", inputImageFile);
   parser.getParameterValue("o", outputDir);
@@ -224,6 +236,13 @@ int main(int argc, char** argv)
   if (parser.isPresent("p"))
   {
     parser.getParameterValue("p", parameterFile);
+  }
+  if (parser.isPresent("L"))
+  {
+    std::string tempLogDir;
+    parser.getParameterValue("L", tempLogDir);
+    cbica::createDir(tempLogDir);
+    logFile = cbica::normPath(tempLogDir + "/" + cbica::getCurrentLocalTimestamp() + ".log");
   }
   //auto inputImageInfo = cbica::ImageInfo(inputImageFile);
 
