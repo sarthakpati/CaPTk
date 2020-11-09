@@ -170,7 +170,7 @@ int algorithmsRunner()
     }
     if (!cbica::isFile(parameterFile))
     {
-      std::cerr << "The specified lattice parameter file, '" << parameterFile << "' was not found; please check.\n";
+      logger.WriteError("The specified lattice parameter file, '" + parameterFile + "' was not found; please check.");
       exit(EXIT_FAILURE);
     }
 
